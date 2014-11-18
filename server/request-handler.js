@@ -13,49 +13,58 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 
-var getStatusCode = require('./data.js').getStatusCode;
+var getGETStatusCode = require('./data.js').getGETStatusCode;
+var getPOSTStatusCode = require('./data.js').getPOSTStatusCode;
+
 var getData = require('./data.js').getData;
 var setData = require('./data.js').setData;
 
-
 var requestHandler = function(request, response) {
-  // Do some basic logging.
-
-  console.log("Serving request type " + request.method + " for url " + request.url);
-
-  // Dynamic
-  var statusCode = getStatusCode(request);
-  console.log(statusCode);
-
   var headers = defaultCorsHeaders;
-
   headers['Content-Type'] = "json";
 
-  response.writeHead(statusCode, headers);
-
-  if (statusCode === 201) {
-    setData(request);
+  if (request.method === "GET") {
+    handleGETRequest(request, response, headers);
+  } else if (request.method === "POST") {
+    handlePOSTRequest(request, response, headers);
+  } else {
+    handleBadRequest(request, response, headers);
   }
 
-  //Check status code before getting data
-  //Dynamic
+};
+
+var handleGETRequest = function(request, response, headers) {
+  var statusCode = getGETStatusCode(request.url);
+  response.writeHead(statusCode, headers);
+
   if (statusCode === 200) {
     //"results" key necessary
-    response.end(JSON.stringify({"results": getData(request)}));
+    response.end(JSON.stringify({"results": getData(request.url)}));
   } else {
     response.end(JSON.stringify({}));
   }
 };
 
+var handlePOSTRequest = function(request, response, headers) {
+  request.on('data', function(data) {
+    var dataObj = JSON.parse(data.toString());
+    var statusCode = getPOSTStatusCode(dataObj);
+    response.writeHead(statusCode, headers);
 
+    if (statusCode === 201) {
+      setData(dataObj, request.url);
+    }
 
+    response.end();
+  });
+};
 
+var handleBadRequest = function(request, response, headers) {
+  var statusCode = 405;
+  response.writeHead(statusCode);
 
-
-
-
-
-
+  response.end();
+};
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
