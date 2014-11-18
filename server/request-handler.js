@@ -13,6 +13,10 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 
+var getStatusCode = require('./data.js').getStatusCode;
+var getData = require('./data.js').getData;
+var setData = require('./data.js').setData;
+
 
 var requestHandler = function(request, response) {
   // Do some basic logging.
@@ -20,7 +24,8 @@ var requestHandler = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
 
   // Dynamic
-  var statusCode = 200;
+  var statusCode = getStatusCode(request);
+  console.log(statusCode);
 
   var headers = defaultCorsHeaders;
 
@@ -28,12 +33,21 @@ var requestHandler = function(request, response) {
 
   response.writeHead(statusCode, headers);
 
+  if (statusCode === 201) {
+    setData(request);
+  }
+
+  //Check status code before getting data
   //Dynamic
-  response.end("{}");
+  if (statusCode === 200) {
+    //"results" key necessary
+    response.end(JSON.stringify({"results": getData(request)}));
+  } else {
+    response.end(JSON.stringify({}));
+  }
 };
 
-//statusCodeHandler
-//
+
 
 
 
