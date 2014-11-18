@@ -1,6 +1,6 @@
 //Global data object
 var rooms = {
-  '/classes/messages': [],
+  '/classes/messages': [{username: 'abc', message:'sup', objectId:-1}],
   '/classes/room1': [],
 };
 
@@ -30,6 +30,7 @@ var setData = function (dataObj, url) {
   if (!rooms[url]) {
     rooms[url] = [];
   }
+  dataObj.objectId = uniqueId++;
   rooms[url].push(dataObj);
 };
 

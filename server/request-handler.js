@@ -20,49 +20,57 @@ var getData = require('./data.js').getData;
 var setData = require('./data.js').setData;
 
 var requestHandler = function(request, response) {
+  var url = request.url === '/' ? '/classes/messages' : request.url;
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = "json";
 
   if (request.method === "GET") {
-    handleGETRequest(request, response, headers);
+    handleGETRequest(request, response, headers, url);
   } else if (request.method === "POST") {
-    handlePOSTRequest(request, response, headers);
+    handlePOSTRequest(request, response, headers, url);
+  } else if (request.method === "OPTIONS") {
+    handleOPTIONSRequest(request, response, headers);
   } else {
     handleBadRequest(request, response, headers);
   }
 
 };
 
-var handleGETRequest = function(request, response, headers) {
-  var statusCode = getGETStatusCode(request.url);
+var handleGETRequest = function(request, response, headers, url) {
+  var statusCode = getGETStatusCode(url);
   response.writeHead(statusCode, headers);
 
   if (statusCode === 200) {
     //"results" key necessary
-    response.end(JSON.stringify({"results": getData(request.url)}));
+    response.end(JSON.stringify({"results": getData(url)}));
   } else {
-    response.end(JSON.stringify({}));
+    response.end('{}');
   }
 };
 
-var handlePOSTRequest = function(request, response, headers) {
+var handlePOSTRequest = function(request, response, headers, url) {
   request.on('data', function(data) {
     var dataObj = JSON.parse(data.toString());
     var statusCode = getPOSTStatusCode(dataObj);
     response.writeHead(statusCode, headers);
 
     if (statusCode === 201) {
-      setData(dataObj, request.url);
+      setData(dataObj, url);
     }
 
-    response.end();
+    response.end('{}');
   });
+};
+
+var handleOPTIONSRequest = function(request, response, headers) {
+  var statusCode = 200;
+  response.writeHead(statusCode, headers);
+  response.end();
 };
 
 var handleBadRequest = function(request, response, headers) {
   var statusCode = 405;
   response.writeHead(statusCode);
-
   response.end();
 };
 
