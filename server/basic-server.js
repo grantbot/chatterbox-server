@@ -1,6 +1,9 @@
 /* Import node's http module: */
 var http = require("http");
+var fs = require("fs");
+var path = require("path");
 var requestHandler = require("./request-handler.js").requestHandler;
+var url = require('url');
 
 // Every server needs to listen on a port with a unique number. The
 // standard port for HTTP servers is port 80, but that port is
@@ -22,7 +25,46 @@ var ip = "127.0.0.1";
 // incoming requests.
 //
 // After creating the server, we will tell it to listen on the given port and IP. */
-var server = http.createServer(requestHandler);
+
+
+var sendFile = function(filePath, fileType) {
+  return function(req, res) {
+    var serverPath = path.join(__dirname, filePath);
+    fileType = fileType || 'text/html';
+
+    fs.readFile(serverPath, function(err, data){
+      res.writeHead(200, fileType);
+      res.end(data);
+    });
+  };
+};
+
+var router = {
+  '/': requestHandler,
+  '/client': sendFile('/../client/index.html'),
+  '/bower_components/jquery/jquery.min.js': sendFile('/../client/bower_components/jquery/jquery.min.js'),
+  '/bower_components/underscore/underscore-min.js': sendFile('/../client/bower_components/underscore/underscore-min.js'),
+  '/env/config.js': sendFile('/../client/env/config.js'),
+  '/scripts/app.js': sendFile('/../client/scripts/app.js'),
+  '/images/spiffygif_46x46.gif': sendFile('/../client/images/spiffygif_46x46.gif'),
+  '/styles/styles.css': sendFile('/../client/styles/styles.css', 'text/css'),
+  '/bower_components/underscore/underscore-min.map': sendFile('/../client/bower_components/underscore/underscore-min.map')
+};
+
+var server = http.createServer(function(req, res) {
+  var URL = url.parse(req.url);
+  // console.log('SERVING URL', req.url);
+
+  if (URL.pathname === '/client' && URL.query !== null) {
+    router['/client'](req, res);
+  }
+  else if (router[req.url] ) {
+    router[req.url](req, res);
+  } else {
+    requestHandler(req, res);
+  }
+});
+
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 

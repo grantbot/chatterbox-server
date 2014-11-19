@@ -21,6 +21,7 @@ var setData = require('./data.js').setData;
 
 var requestHandler = function(request, response) {
   var url = request.url === '/' ? '/classes/messages' : request.url;
+
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = "json";
 
