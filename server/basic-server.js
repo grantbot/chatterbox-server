@@ -46,7 +46,7 @@ var router = {
   '/bower_components/underscore/underscore-min.js': sendFile('/../client/bower_components/underscore/underscore-min.js'),
   '/env/config.js': sendFile('/../client/env/config.js'),
   '/scripts/app.js': sendFile('/../client/scripts/app.js'),
-  '/images/spiffygif_46x46.gif': sendFile('/../client/images/spiffygif_46x46.gif'),
+  '/images/spiffygif_46x46.gif': sendFile('/../client/images/spiffygif_46x46.gif', 'image/gif'),
   '/styles/styles.css': sendFile('/../client/styles/styles.css', 'text/css'),
   '/bower_components/underscore/underscore-min.map': sendFile('/../client/bower_components/underscore/underscore-min.map')
 };

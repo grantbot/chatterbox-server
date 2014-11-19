@@ -1,8 +1,18 @@
+var fs = require('fs');
+var path = require("path");
+
+var logFile = 'data-storage.json';
+
 //Global data object
+var serverPath = path.join(__dirname, logFile);
 var rooms = {
   '/classes/messages': [{username: 'abc', message:'sup', objectId:-1}],
   '/classes/room1': [],
 };
+
+//Persistent message logging
+var data = fs.readFileSync(serverPath).toString();
+rooms = data !== "" ? JSON.parse(fs.readFileSync(serverPath) ) : rooms;
 
 var uniqueId = 0;
 
@@ -27,11 +37,20 @@ var getPOSTStatusCode = function (dataObj) {
 };
 
 var setData = function (dataObj, url) {
+  var serverPath = path.join(__dirname, logFile)
+
   if (!rooms[url]) {
     rooms[url] = [];
   }
   dataObj.objectId = uniqueId++;
   rooms[url].push(dataObj);
+
+  fs.writeFile(serverPath, JSON.stringify(rooms), function (err) {
+    if (err) throw err;
+    console.log('It\'s saved!');
+  });
+
+
 };
 
 exports.getGETStatusCode = getGETStatusCode;
